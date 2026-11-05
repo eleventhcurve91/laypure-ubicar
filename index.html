@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Laypure · Ubicación del equipo</title>
+<title>Laypure · Confirmar el taller</title>
 <style>
   :root{--bg:#0b0f17;--card:#141b26;--txt:#e8eef6;--mut:#8b98a9;--cy:#22d3ee;--ok:#22c55e;--err:#ef4444;--amb:#f59e0b}
   *{box-sizing:border-box}
@@ -22,11 +22,11 @@
 <body>
 <div class="c">
   <div class="logo">LAYPURE</div>
-  <h1>Ubicación del equipo</h1>
-  <p>Párate <b>junto a la máquina</b> y toca el botón. El navegador pedirá permiso de ubicación: toca <b>Permitir</b>.</p>
+  <h1>Confirmar el taller</h1>
+  <p>Párate <b>junto a la máquina</b> y toca el botón. El navegador pedirá permiso de ubicación: toca <b>Permitir</b>. Así el equipo queda registrado en este taller.</p>
   <p>Se hace una sola vez en este taller.</p>
   <p class="id" id="id"></p>
-  <button id="b">Registrar ubicación</button>
+  <button id="b">Confirmar taller</button>
   <div class="st" id="st"></div>
 </div>
 <script>
@@ -59,7 +59,7 @@ $("b").onclick = () => {
     navigator.geolocation.clearWatch(w);
     if (!mejor) { $("b").disabled = false; st("No se obtuvo la posición. Activa la ubicación del celular e intenta de nuevo.", "err"); return; }
     st("Enviando… (±" + Math.round(mejor.accuracy) + " m)", "amb");
-    enviar(mejor).then(() => st("¡Listo! Ubicación registrada (±" + Math.round(mejor.accuracy) + " m). En unos minutos la verás en la pantalla del equipo como «Fijada». Ya puedes cerrar esta página.", "ok"))
+    enviar(mejor).then(() => st("¡Listo! Taller confirmado (±" + Math.round(mejor.accuracy) + " m). Ya puedes cerrar esta página.", "ok"))
       .catch(e => { $("b").disabled = false; st("No se pudo enviar (" + e.message + "). Revisa que tengas internet e intenta de nuevo.", "err"); });
   };
   const w = navigator.geolocation.watchPosition(pos => {
