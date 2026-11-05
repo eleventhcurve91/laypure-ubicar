@@ -22,6 +22,12 @@
   h1{font-weight:800;font-size:30px;line-height:1.15;margin:0 0 14px;color:var(--marino)}
   p{margin:0 0 12px;color:var(--gris)}
   p b{color:var(--marino)}
+  .pasos{margin:18px 0 6px;padding:0;list-style:none;counter-reset:n}
+  .pasos li{counter-increment:n;position:relative;padding:0 0 14px 40px;color:var(--gris)}
+  .pasos li::before{content:counter(n);position:absolute;left:0;top:-1px;width:26px;height:26px;border-radius:50%;
+    background:var(--suave);color:var(--azul);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .pasos li b{color:var(--marino)}
+  .nota{font-size:15px;background:var(--suave);border-radius:10px;padding:12px 14px}
   .equipo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:22px 0 22px;padding:14px 0;border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);font-size:15px}
   .equipo span{color:var(--gris)}
   .equipo code{font:700 14px/1 ui-monospace,Menlo,Consolas,monospace;color:var(--marino);background:var(--suave);padding:6px 8px;border-radius:6px}
@@ -45,8 +51,15 @@
 
   <div class="paso">Paso 3 de 3</div>
   <h1>Confirmar el taller</h1>
-  <p>Quédate <b>al lado de la máquina</b> y toca el botón. El celular te va a pedir permiso de ubicación: elige <b>Permitir</b>.</p>
-  <p>Solo se hace una vez en cada taller.</p>
+  <p>La máquina ya quedó conectada al WiFi. Falta un último paso para registrar <b>en qué taller está instalada</b>: se usa la posición de tu celular, por eso tienes que estar junto a ella.</p>
+
+  <ol class="pasos">
+    <li><b>Quédate al lado de la máquina</b> y activa la ubicación (GPS) del celular.</li>
+    <li>Toca <b>Confirmar taller</b>.</li>
+    <li>Cuando el celular pregunte, elige <b>Permitir</b>. Tarda unos segundos mientras afina la posición.</li>
+  </ol>
+
+  <p class="nota">Solo se hace una vez en cada taller. La máquina recuerda las redes WiFi del lugar y la próxima vez lo reconoce sola. La posición de tu celular se toma una sola vez y queda como la ubicación de la máquina; no se sigue tu celular.</p>
 
   <div class="equipo"><span>Equipo</span><code id="id">—</code></div>
 
