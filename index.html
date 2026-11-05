@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laypure · Ubicación del equipo</title>
+<style>
+  :root{--bg:#0b0f17;--card:#141b26;--txt:#e8eef6;--mut:#8b98a9;--cy:#22d3ee;--ok:#22c55e;--err:#ef4444;--amb:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
+  .c{background:var(--card);border-radius:18px;padding:24px 20px;max-width:420px;width:100%;text-align:center}
+  h1{font-size:22px;margin:4px 0 6px}
+  .logo{color:var(--cy);font-weight:800;letter-spacing:.12em;font-size:14px}
+  p{color:var(--mut);margin:8px 0}
+  .id{font-family:ui-monospace,monospace;color:var(--cy);font-size:14px}
+  button{margin-top:18px;width:100%;padding:16px;border:0;border-radius:12px;background:var(--cy);color:#04202a;font-size:18px;font-weight:700}
+  button:disabled{opacity:.5}
+  .st{margin-top:16px;font-weight:600;min-height:1.5em}
+  .ok{color:var(--ok)}.err{color:var(--err)}.amb{color:var(--amb)}
+</style>
+</head>
+<body>
+<div class="c">
+  <div class="logo">LAYPURE</div>
+  <h1>Ubicación del equipo</h1>
+  <p>Párate <b>junto a la máquina</b> y toca el botón. El navegador pedirá permiso de ubicación: toca <b>Permitir</b>.</p>
+  <p>Se hace una sola vez en este taller.</p>
+  <p class="id" id="id"></p>
+  <button id="b">Registrar ubicación</button>
+  <div class="st" id="st"></div>
+</div>
+<script>
+const DB = "https://laypure-rastreo-default-rtdb.firebaseio.com";
+const id = (new URLSearchParams(location.search).get("id") || "").trim();
+const $ = s => document.getElementById(s);
+const st = (t, c) => { $("st").textContent = t; $("st").className = "st " + (c || ""); };
+if (!/^[A-Za-z0-9_-]{3,40}$/.test(id)) { $("b").disabled = true; st("Código QR incompleto: vuelve a escanear el de la pantalla del equipo.", "err"); }
+else $("id").textContent = "Equipo " + id;
+
+function enviar(p) {
+  const body = JSON.stringify({ fijarLat: +p.latitude.toFixed(6), fijarLon: +p.longitude.toFixed(6), fijarPrec: Math.max(5, Math.round(p.accuracy)) });
+  // POST con text/plain = peticion simple (sin preflight); Firebase la trata como PATCH
+  const url = DB + "/cmd/" + encodeURIComponent(id) + ".json?x-http-method-override=PATCH";
+  return fetch(url, { method: "POST", headers: { "Content-Type": "text/plain" }, body })
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); })
+    .catch(e => {
+      if (String(e).includes("HTTP")) throw e;
+      return fetch(url, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body });   // respaldo
+    });
+}
+
+$("b").onclick = () => {
+  if (!navigator.geolocation) { st("Este navegador no da la ubicación. Prueba con Chrome.", "err"); return; }
+  $("b").disabled = true;
+  st("Buscando tu posición… (activa el GPS del celular)", "amb");
+  let mejor = null, fin = false;
+  const terminar = () => {
+    if (fin) return; fin = true;
+    navigator.geolocation.clearWatch(w);
+    if (!mejor) { $("b").disabled = false; st("No se obtuvo la posición. Activa la ubicación del celular e intenta de nuevo.", "err"); return; }
+    st("Enviando… (±" + Math.round(mejor.accuracy) + " m)", "amb");
+    enviar(mejor).then(() => st("¡Listo! Ubicación registrada (±" + Math.round(mejor.accuracy) + " m). En unos minutos la verás en la pantalla del equipo como «Fijada». Ya puedes cerrar esta página.", "ok"))
+      .catch(e => { $("b").disabled = false; st("No se pudo enviar (" + e.message + "). Revisa que tengas internet e intenta de nuevo.", "err"); });
+  };
+  const w = navigator.geolocation.watchPosition(pos => {
+    const c = pos.coords;
+    if (!mejor || c.accuracy < mejor.accuracy) mejor = c;
+    st("Posición ±" + Math.round(c.accuracy) + " m, afinando…", "amb");
+    if (c.accuracy <= 20) terminar();
+  }, err => {
+    if (err.code === 1) { fin = true; navigator.geolocation.clearWatch(w); $("b").disabled = false;
+      st("Permiso denegado. Toca el candado de la barra de direcciones → Ubicación → Permitir, y vuelve a intentar.", "err"); }
+  }, { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 });
+  setTimeout(terminar, 25000);       // como maximo 25 s esperando la mejor precision
+};
+</script>
+</body>
+</html>
